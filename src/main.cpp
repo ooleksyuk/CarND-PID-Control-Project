@@ -33,7 +33,8 @@ int main()
   uWS::Hub h;
 
   PID pid;
-  // TODO: Initialize the pid variable.
+  // Initialize the pid variable.
+  pid.Init(0.25, 0.001, 0.01);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -50,14 +51,47 @@ int main()
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
-          double steer_value;
+          double steer_value = 0.0;
           /*
-          * TODO: Calcuate steering value here, remember the steering value is
+          * TODO: Calculate steering value here, remember the steering value is
           * [-1, 1].
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          
+          pid.UpdateError(cte);
+          steer_value -= pid.TotalError();
+
+          // box the steer value within the [-1, 1] range
+          if(steer_value > 1){
+            steer_value = 1;
+          }
+
+          if(steer_value < -1){
+            steer_value = -1;
+          }
+
+          // use a constant throttle value
+          double throttle_value = 0.5;// - 0.1*fabs(cte);// - 0.2 * fabs(cte);
+
+          // if the vehicle is in danger of stopping, take action
+          if(fabs(speed) < 10){
+
+            // if the vehicle is too much to the right
+            if(cte > 0){
+              steer_value = -0.8;	// steer left
+              throttle_value = 0.4;
+            }
+
+            // if the vehicle is too much to the left
+            if(cte < 0){
+              steer_value = 0.8; // steer right
+              throttle_value = 0.4;
+            }
+          }
+
+          if (fabs(cte) > 0.6 && fabs(angle) > 7.5 && speed > 50.0) {
+            throttle_value = -1.0;
+          }
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
 
