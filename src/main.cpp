@@ -52,6 +52,7 @@ int main()
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value = 0.0;
+          double throttle_value;
           /*
           * TODO: Calculate steering value here, remember the steering value is
           * [-1, 1].
@@ -71,7 +72,7 @@ int main()
           }
 
           // use a constant throttle value
-          double throttle_value = 0.5;// - 0.1*fabs(cte);// - 0.2 * fabs(cte);
+          throttle_value = 0.5;// - 0.1*fabs(cte);// - 0.2 * fabs(cte);
 
           // if the vehicle is in danger of stopping, take action
           if(fabs(speed) < 10){
@@ -87,10 +88,6 @@ int main()
               steer_value = 0.8; // steer right
               throttle_value = 0.4;
             }
-          }
-
-          if (fabs(cte) > 0.6 && fabs(angle) > 7.5 && speed > 50.0) {
-            throttle_value = -1.0;
           }
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;

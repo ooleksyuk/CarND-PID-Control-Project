@@ -8,14 +8,6 @@ public:
   double p_error;
   double i_error;
   double d_error;
-  double previous_error;
-  double total_square_error;
-  double n;
-  double steer;
-  double errorSum;
-  long counter;
-  double minError;
-  double maxError;
 
   /*
   * Coefficients
@@ -48,19 +40,4 @@ public:
   * Calculate the total PID error.
   */
   double TotalError();
-
-  /*
-  *  Returns the average error.
-  */
-  double AverageError();
-
-  /*
-  * Returns the min error.
-  */
-  double MinError();
-
-  /*
-  * Returns the max error.
-  */
-  double MaxError();
 };
