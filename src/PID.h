@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 class PID {
 public:
@@ -16,7 +17,9 @@ public:
   double Ki;
   double Kd;
 
-  /*
+  double best_error;
+  int last_idx;
+  const double tol = 0.001;/*
   * Constructor
   */
   PID();
