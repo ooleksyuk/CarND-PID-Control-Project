@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <limits>
 
 class PID {
 public:
@@ -17,11 +17,13 @@ public:
   double Ki;
   double Kd;
 
+  /*
+   * Twiddle params:
+   */
   const double tol = std::numeric_limits<double>::min();
-  double best_error;
+  double best_error = std::numeric_limits<double>::max();
   int idx = 0;
-  int current_state = 0; // possible values 0, 1,2, 3
-
+  int state = 0; // possible values 0, 1,2, 3
   /*
   * Constructor
   */
@@ -41,6 +43,11 @@ public:
   * Update the PID error variables given cross track error.
   */
   void UpdateError(double cte);
+
+  /*
+   * Twiddle cte param to get the optimal value.
+   */
+  void Twiddle(double cte);
 
   /*
   * Calculate the total PID error.

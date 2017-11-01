@@ -40,15 +40,17 @@ int main()
   uWS::Hub h;
 
   // Initialize the pid variable.
-  // steering pid
-  PID pid;
 //  pid.Init(0.0, 0.0, 0.0);
-  pid.Init(1.0, 1.0, 80.0); // worked without Ki on a full circle
+//  pid.Init(1.0, 1.0, 1.0); // worked without Ki on a full circle
 //  pid.Init(0.0, 1.0, 0.0);
-  double prev_cte = 0.0;
-  std::vector<double> sum_cte(50, 0);
+  double Kp = 0.1; //23.9672; //12; // 0.1;
+  double Ki = 0.0001;
+  double Kd = 3.9806; //4.0;
 
-  h.onMessage([&pid, &prev_cte, &sum_cte](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  PID pid;
+  pid.Init(Kp, Ki, Kd);
+
+  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -63,7 +65,7 @@ int main()
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
-          double steer_value;
+          double steer_value = 0.0;
           /*
           * TODO: Calculate steering value here, remember the steering value is
           * [-1, 1].
@@ -71,10 +73,8 @@ int main()
           * another PID controller to control the speed!
           */
           pid.UpdateError(cte);
-          sum_cte.push_back(cte);
-          double int_cte = std::accumulate(sum_cte.begin(), sum_cte.end(), 0.0);
-          steer_value = deg2rad(- pid.Kp * cte - pid.Kd * (cte - prev_cte) - pid.Ki * int_cte);
-          prev_cte = cte;
+//          pid.Twiddle(cte);
+          steer_value = rad2deg(pid.TotalError());
           // DEBUG
           double throttle = 0.2;
           if (fabs(steer_value) > 0.1 && float(speed) > 20.0) {

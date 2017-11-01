@@ -1,5 +1,6 @@
 #include "PID.h"
-#include <cmath>
+#include <math.h>
+#include <iostream>
 using namespace std;
 
 /*
@@ -17,29 +18,33 @@ void PID::Init(double Kp_in, double Ki_in, double Kd_in) {
   p_error = 0.1;
   i_error = 0.001;
   d_error = 0.1;
-
-  best_error = std::numeric_limits<double>::max();
 }
 
 void PID::UpdateError(double cte) {
-  double p[] = { Kp, Kd, Ki };
-  double dp[] = { p_error, d_error, i_error };
+  d_error = cte - p_error;
+  p_error = cte;
+  i_error += cte;
+}
 
-  if (TotalError() > tol) {
-    switch (current_state) {
+void PID::Twiddle(double cte) {
+  double p[] = {Kp, Kd, Ki};
+  double dp[] = {p_error, d_error, i_error};
+
+  if ((fabs(p_error) + fabs(i_error) + fabs(d_error)) > tol) {
+    switch (state) {
       case 0: {
         p[idx] += dp[idx];
-        current_state = 1;
+        state = 1;
         break;
       }
       case 1: {
         if (fabs(cte) < fabs(best_error)) {
           best_error = cte;
           dp[idx] *= 1.1;
-          current_state = 3;
+          state = 3;
         } else {
           p[idx] -= 2 * dp[idx];
-          current_state = 2;
+          state = 2;
         }
         break;
       }
@@ -51,15 +56,16 @@ void PID::UpdateError(double cte) {
           p[idx] += dp[idx];
           dp[idx] *= 0.9;
         }
-        current_state = 3;
+        state = 3;
         break;
       }
       case 3: {
         idx = (idx + 1) % 2;
-        current_state = 0;
+        state = 0;
         break;
       }
     }
+
     p_error = dp[0];
     d_error = dp[1];
     i_error = dp[2];
@@ -67,9 +73,10 @@ void PID::UpdateError(double cte) {
     Kp = p[0];
     Kd = p[1];
     Ki = p[2];
+    std::cout << "| Kp: " << Kp << " | Ki: " << Ki << " | Kd: " << Kd << std::endl;
   }
 }
 
 double PID::TotalError() {
-  return fabs(p_error) + fabs(d_error) + fabs(d_error);
+  return -Kp * p_error - Ki * i_error - Kd * d_error;
 }
