@@ -17,9 +17,12 @@ public:
   double Ki;
   double Kd;
 
+  const double tol = std::numeric_limits<double>::min();
   double best_error;
-  int last_idx;
-  const double tol = 0.001;/*
+  int idx = 0;
+  int current_state = 0; // possible values 0, 1,2, 3
+
+  /*
   * Constructor
   */
   PID();

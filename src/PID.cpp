@@ -1,10 +1,9 @@
 #include "PID.h"
-#include <string>
 #include <cmath>
 using namespace std;
 
 /*
-* TODO: Complete the PID class.
+* Complete the PID class.
 */
 PID::PID() {}
 
@@ -19,40 +18,58 @@ void PID::Init(double Kp_in, double Ki_in, double Kd_in) {
   i_error = 0.001;
   d_error = 0.1;
 
-  last_idx = 0;
+  best_error = std::numeric_limits<double>::max();
 }
 
 void PID::UpdateError(double cte) {
-  double p[] = { Kp, Kd, Ki};
-  std::vector<double> dp = { p_error, d_error, i_error };
+  double p[] = { Kp, Kd, Ki };
+  double dp[] = { p_error, d_error, i_error };
 
   if (TotalError() > tol) {
-    for (int i = 0; i < dp.size(), i++;) {
-      best_error = cte;
-      p[i] += dp[i];
-
-      if (cte > best_error) {
-        best_error = cte;
-        dp[i] *= 1.1;
-      } else {
-        p[i] -= 2 * dp[i];
-
-        if (cte < best_error) {
+    switch (current_state) {
+      case 0: {
+        p[idx] += dp[idx];
+        current_state = 1;
+        break;
+      }
+      case 1: {
+        if (fabs(cte) < fabs(best_error)) {
           best_error = cte;
-          dp[i] *= 1.1;
+          dp[idx] *= 1.1;
+          current_state = 3;
         } else {
-          p[i] += dp[i];
-          dp[i] *= 0.9;
+          p[idx] -= 2 * dp[idx];
+          current_state = 2;
         }
+        break;
+      }
+      case 2: {
+        if (fabs(cte) < fabs(best_error)) {
+          best_error = cte;
+          dp[idx] *= 1.1;
+        } else {
+          p[idx] += dp[idx];
+          dp[idx] *= 0.9;
+        }
+        current_state = 3;
+        break;
+      }
+      case 3: {
+        idx = (idx + 1) % 2;
+        current_state = 0;
+        break;
       }
     }
+    p_error = dp[0];
+    d_error = dp[1];
+    i_error = dp[2];
+
+    Kp = p[0];
+    Kd = p[1];
+    Ki = p[2];
   }
-//  i_error += cte;
-  p_error = dp[0];
-  d_error = dp[1];
-  i_error = dp[2];
 }
 
 double PID::TotalError() {
-  return p_error + i_error + d_error;
+  return fabs(p_error) + fabs(d_error) + fabs(d_error);
 }
