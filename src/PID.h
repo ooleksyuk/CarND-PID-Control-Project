@@ -23,7 +23,7 @@ public:
   const double tol = std::numeric_limits<double>::min();
   double best_error = std::numeric_limits<double>::max();
   int idx = 0;
-  int state = 0; // possible values 0, 1,2, 3
+  int state = 0;
   /*
   * Constructor
   */

@@ -6,3 +6,5 @@ tags
 .idea
 cmake-build-debug/
 term2_sim_mac/
+*.mov
+*.gif

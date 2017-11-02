@@ -2,6 +2,26 @@
 Self-Driving Car Engineer Nanodegree Program
 
 ---
+## Reflections
+
+I have worked on PID Controller with twiddle algorithm inside a state machine to optimize P,I, D parameters.
+
+The actual implementation of the Controller is fairly straight forward. Making the Controller perform well on the track took me a few iterations.
+I went over Sebastian's lecture about PID over two times. I have implemented the basic PID class with Init, Update, and TotalError functions.
+The long part was to figure out input params for the PID instance of teh Controller. I have started with only P, by assigning 0 value to Kp. After running a car on the track with only P I have selected the value ov 0.1.
+After that I have proceeded with D. I have started with 0 value and ran a simulator for a few tracks to narrow it down to Kd be 2.5. It ended up not working after all on the full track. I have written the Twiddle function that was based on the notes from the Sebastian's lecture. I was able to improve my value and ended up selecting 3.9806.
+
+So far everything looked good but I have not been using Integral part and my car was still not stable on the track.
+
+I have added i_error and Pi to the TotalError function. With a help of Twiddle I was able to narrow it down to 0.0001; Also converting Steer_value into decrease with the help of rad2deg() function.
+
+
+As for the whole PID Controller project the knowledge about each component is very important. P is to tune present, D is to tune remember past values and I to predict future.
+* The "P" for proportional means that the car will steer in proportion to the cross-track error, or CTE. CTE is essentially how far from the middle line of the road the car is.
+* The "I" for integral sums up all CTEs up to that point, such that too many negative CTEs (in this case, meaning the car has been to the left of the middle of the lane for awhile) will drive up this value, causing the car to turn back toward the middle, preventing the car from driving on one side of the lane the whole time. If the coefficient is too high for I, the car tends to have quicker oscillations, and does not tend to get up to a quick speed. 
+* The "D" for derivative is the change in CTE from one value to the next.
+* [Video of Simulator and console out put side by side](https://youtu.be/Yc4DuYxcmlQ)
+* [A GIF Video of the full track in Simulator](https://drive.google.com/file/d/0B6fx9JOGg7WqdWJmek02azE5bGs/view?usp=sharing)
 
 ## Dependencies
 
