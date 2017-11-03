@@ -15,9 +15,9 @@ void PID::Init(double Kp_in, double Ki_in, double Kd_in) {
   Ki = Ki_in;
   Kd = Kd_in;
 
-  p_error = 0.1;
-  i_error = 0.001;
-  d_error = 0.1;
+  p_error = 0.0;
+  i_error = 0.0;
+  d_error = 0.0;
 }
 
 void PID::UpdateError(double cte) {

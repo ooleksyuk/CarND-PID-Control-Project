@@ -44,13 +44,20 @@ int main()
 //  pid.Init(1.0, 1.0, 1.0); // worked without Ki on a full circle
 //  pid.Init(0.0, 1.0, 0.0);
   double Kp = 0.1; //23.9672; //12; // 0.1;
-  double Ki = 0.0001;
+  double Ki = 0.001;
   double Kd = 3.9806; //4.0;
 
-  PID pid;
-  pid.Init(Kp, Ki, Kd);
+  PID pid_s;
+  pid_s.Init(Kp, Ki, Kd);
 
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  Kp = 4.7679;//-6.133;//-2.00497; //-3.3;//-4.3;//-1.0;//-2.00497; //-6.40497 //-10;
+  Ki = 0.000001;//0.000001; //0.0001;//0.000001;
+  Kd = -1.761;//-1.322; //-1.2185;//-1.0; //-0.2185; //-0.0486; //-0.2186; //-2.3226185; //-12;
+
+  PID pid_t;
+  pid_t.Init(Kp, Ki, Kd);
+
+  h.onMessage([&pid_s, &pid_t](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -65,24 +72,27 @@ int main()
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
-          double steer_value = 0.0;
           /*
           * Calculate steering value here, remember the steering value is
           * [-1, 1].
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          pid.UpdateError(cte);
-//          pid.Twiddle(cte);
-          steer_value = rad2deg(pid.TotalError());
+          pid_s.UpdateError(cte);
+//          pid_s.Twiddle(cte);
+          double steer_value = pid_s.TotalError();
           // DEBUG
-          double throttle = 0.2;
-          if (fabs(steer_value) > 0.1 && float(speed) > 20.0) {
-            throttle = 0.1;
+          pid_t.UpdateError(cte);
+//          pid_t.Twiddle(cte);
+          double throttle = -pid_t.TotalError();
+          if (speed < 15.0 && throttle < 0.1) {
+            throttle = 0.4;
+          } else if (speed > 50.0) {
+            throttle = -0.2;
           }
           // DEBUG
           std::cout << "CTE: " << cte << " Angel: " << angle;
-          std::cout << " Throttle: " << throttle;
+          std::cout << " Throttle: " << throttle << " Speed: " << speed;
           std::cout << " Steer Value: " << steer_value << std::endl;
 
           json msgJson;
