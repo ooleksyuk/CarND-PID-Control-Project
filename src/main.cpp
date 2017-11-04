@@ -43,7 +43,7 @@ int main()
 //  pid.Init(0.0, 0.0, 0.0);
 //  pid.Init(1.0, 1.0, 1.0); // worked without Ki on a full circle
 //  pid.Init(0.0, 1.0, 0.0);
-  double Kp = 0.1; //23.9672; //12; // 0.1;
+  double Kp = 0.22; //23.9672; //12; // 0.1;
   double Ki = 0.001;
   double Kd = 3.9806; //4.0;
 
@@ -51,7 +51,7 @@ int main()
   pid_s.Init(Kp, Ki, Kd);
 
   Kp = 0.316731; //4.7679;//-6.133;//-2.00497; //-3.3;//-4.3;//-1.0;//-2.00497; //-6.40497 //-10;
-  Ki = 0.000000001;//0.000001; //0.0001;//0.000001;
+  Ki = 0.00001;//0.000000001;//0.000001; //0.0001;//0.000001;
   Kd = 0.0226185; //-1.761;//-1.322; //-1.2185;//-1.0; //-0.2185; //-0.0486; //-0.2186; //-2.3226185; //-12;
 
   PID pid_t;
@@ -82,14 +82,10 @@ int main()
 //          pid_s.Twiddle(cte);
           double steer_value = pid_s.TotalError();
           // DEBUG
-          pid_t.UpdateError(cte);
-//          pid_t.Twiddle(cte);
-          double throttle = 0.6 + pid_t.TotalError();
-          if (speed < 15.0 && throttle < 0.1) {
-            throttle = 0.4;
-          } else if (speed > 50.0) {
-            throttle = -0.2;
-          }
+          double target_speed = 50.0;
+          pid_t.UpdateError(speed - target_speed);
+//          pid_t.Twiddle(speed - target_speed);
+          double throttle = pid_t.TotalError();
           // DEBUG
           std::cout << "CTE: " << cte << " Angel: " << angle;
           std::cout << " Throttle: " << throttle << " Speed: " << speed;
