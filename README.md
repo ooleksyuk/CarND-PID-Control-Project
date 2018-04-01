@@ -2,6 +2,10 @@
 
 ## Reflections
 
+The main goal of the project is to implement PID controller in C++ to steer the self driving car around the track in a Simulator.
+
+**About PID Controller**
+
 I have worked on PID Controller with twiddle algorithm inside a state machine to optimize P,I, D parameters.
 
 The actual implementation of the Controller is fairly straight forward. Making the Controller perform well on the track took me a few iterations.
@@ -13,13 +17,27 @@ So far everything looked good but I have not been using Integral part and my car
 
 I have added i_error and Pi to the TotalError function. With a help of Twiddle I was able to narrow it down to 0.0001; Also converting Steer_value into decrease with the help of rad2deg() function.
 
+A PID (Proportional, Integral, Derivative) controller is a control loop feedback controller which is widely used in different control systems.
+
+Error is an input variable for the controller: `cte = desired_state - measured_state`
+
 
 As for the whole PID Controller project the knowledge about each component is very important. P is to tune present, D is to tune remember past values and I to predict future.
-* The "P" for proportional means that the car will steer in proportion to the cross-track error, or CTE. CTE is essentially how far from the middle line of the road the car is.
-* The "I" for integral sums up all CTEs up to that point, such that too many negative CTEs (in this case, meaning the car has been to the left of the middle of the lane for awhile) will drive up this value, causing the car to turn back toward the middle, preventing the car from driving on one side of the lane the whole time. If the coefficient is too high for I, the car tends to have quicker oscillations, and does not tend to get up to a quick speed. 
-* The "D" for derivative is the change in CTE from one value to the next.
+* The "P" for proportional means that the car will steer in proportion to the cross-track error, or CTE. CTE is essentially how far from the middle line of the road the car is. With the proportional band (P) only, the PID controller output is proportional to the cte. It takes into account only the present value of cte. Thanks to this part of controller, it is able to steer in the correct direction.
+* The "I" for integral sums up all CTEs up to that point, such that too many negative CTEs (in this case, meaning the car has been to the left of the middle of the lane for awhile) will drive up this value, causing the car to turn back toward the middle, preventing the car from driving on one side of the lane the whole time. If the coefficient is too high for I, the car tends to have quicker oscillations, and does not tend to get up to a quick speed. Integral term (I) takes into account the integral of cte over the past time. It is used to reduce systematic bias. From my experianse of PID tuning on real-world systems and some experiments in the simulator, it was found out that we do not need to compute the integral for all time, but calculate it over only last n frames. In other case, we can accumulate errors because of left turns prevalens which can result in different behaviour of the controller during multi lap drive and even going off the track.
+* The "D" for derivative is the change in CTE from one value to the next. With derivative (D) part, the controller output is proportional to the rate of change of cte (its derivative). The parameter is used to reduce overshooting and dump oscillations caused by the P.
 * [Video of Simulator and console out put side by side](https://youtu.be/Yc4DuYxcmlQ)
 * [A GIF Video of the full track in Simulator](https://drive.google.com/file/d/0B6fx9JOGg7WqdWJmek02azE5bGs/view?usp=sharing)
+
+While the PID controller is easy to implement, but it is not so easy to tune.
+
+**How it was tuned**
+
+Initially, the controller was tuned with so-called Ziegler–Nichols method. Generally speaking, it requires to set Kd and Ki to 0 and gradually increase Kp before the car runs with stable and consistent oscillations. This value of Kp and the oscillation period can be used to calculate optimal pid controller parameters by the method. Unfortunatly, the controller with resulted parameters was able to drive car around the track but with a lot of wobbling. That is why, parameters were further tuned manually by try-and-error process.
+
+The same process was applied for differnt speed, so different PID parameters were found for different speed. The results were linearized The same process was applied for different speed, so different PID parameters were found for different speed. The results were linearized in order to make the parameters automatically tune with the car speed variation.
+
+The implementation also takes into account different time intervals between data frames.
 
 ## Dependencies
 
